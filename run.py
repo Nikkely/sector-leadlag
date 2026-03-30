@@ -1,10 +1,14 @@
 import argparse
 import json
+import logging
 import os
+import sys
 from datetime import datetime, timedelta
 
 import pandas as pd
 import yaml
+
+logging.basicConfig(level=logging.WARNING)
 
 from leadlag.fetch import align_dates, fetch_jp_returns, fetch_us_returns
 from leadlag.pca import rolling_pca
@@ -32,8 +36,12 @@ def cmd_signal(config: dict) -> None:
     end = datetime.now()
     start = end - timedelta(days=int(window * 2.5))
 
-    us_ret = fetch_us_returns(list(us_etfs.keys()), start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d"))
-    jp_ret = fetch_jp_returns(list(jp_etfs.keys()), start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d"))
+    try:
+        us_ret = fetch_us_returns(list(us_etfs.keys()), start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d"))
+        jp_ret = fetch_jp_returns(list(jp_etfs.keys()), start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d"))
+    except ValueError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        return
 
     us_aligned, jp_aligned = align_dates(us_ret, jp_ret)
 
@@ -71,8 +79,12 @@ def cmd_simulate(config: dict, start: str, end: str, show_plot: bool) -> None:
 
     fetch_start = (pd.Timestamp(start) - timedelta(days=int(window * 2.5))).strftime("%Y-%m-%d")
 
-    us_ret = fetch_us_returns(list(us_etfs.keys()), fetch_start, end)
-    jp_ret = fetch_jp_returns(list(jp_etfs.keys()), fetch_start, end)
+    try:
+        us_ret = fetch_us_returns(list(us_etfs.keys()), fetch_start, end)
+        jp_ret = fetch_jp_returns(list(jp_etfs.keys()), fetch_start, end)
+    except ValueError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        return
 
     us_aligned, jp_aligned = align_dates(us_ret, jp_ret)
 
