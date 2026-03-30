@@ -41,7 +41,7 @@ def cmd_signal(config: dict) -> None:
         jp_ret = fetch_jp_returns(list(jp_etfs.keys()), start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d"))
     except ValueError as e:
         print(f"Error: {e}", file=sys.stderr)
-        return
+        sys.exit(1)
 
     us_aligned, jp_aligned = align_dates(us_ret, jp_ret)
 
@@ -51,14 +51,18 @@ def cmd_signal(config: dict) -> None:
     eigenvectors_list = rolling_pca(joint, window, lambda_, n_components)
 
     if not eigenvectors_list:
-        print("Not enough data for PCA computation.")
-        return
+        print("Not enough data for PCA computation.", file=sys.stderr)
+        sys.exit(1)
 
     latest_eigvec = eigenvectors_list[-1]
     latest_us = us_aligned.iloc[-1]
 
-    signal = build_signal(latest_us, latest_eigvec, len(us_etfs), len(jp_etfs))
-    result = suggest(signal, jp_etfs, top_n)
+    us_dim = us_aligned.shape[1]
+    jp_dim = jp_aligned.shape[1]
+    jp_etfs_actual = {k: jp_etfs[k] for k in jp_aligned.columns if k in jp_etfs}
+
+    signal = build_signal(latest_us, latest_eigvec, us_dim, jp_dim)
+    result = suggest(signal, jp_etfs_actual, top_n)
 
     os.makedirs("output", exist_ok=True)
     filename = f"output/signal_{datetime.now().strftime('%Y%m%d')}.json"
@@ -84,7 +88,7 @@ def cmd_simulate(config: dict, start: str, end: str, show_plot: bool) -> None:
         jp_ret = fetch_jp_returns(list(jp_etfs.keys()), fetch_start, end)
     except ValueError as e:
         print(f"Error: {e}", file=sys.stderr)
-        return
+        sys.exit(1)
 
     us_aligned, jp_aligned = align_dates(us_ret, jp_ret)
 
@@ -94,11 +98,12 @@ def cmd_simulate(config: dict, start: str, end: str, show_plot: bool) -> None:
     eigenvectors_list = rolling_pca(joint, window, lambda_, n_components)
 
     if not eigenvectors_list:
-        print("Not enough data for simulation.")
-        return
+        print("Not enough data for simulation.", file=sys.stderr)
+        sys.exit(1)
 
-    us_dim = len(us_etfs)
-    jp_dim = len(jp_etfs)
+    us_dim = us_aligned.shape[1]
+    jp_dim = jp_aligned.shape[1]
+    jp_etfs_actual = {k: jp_etfs[k] for k in jp_aligned.columns if k in jp_etfs}
     signal_dates = joint.index[window:]
 
     signals = []
