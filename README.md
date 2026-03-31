@@ -5,7 +5,7 @@
 ## セットアップ
 
 ```bash
-pip install -r requirements.txt
+uv sync
 ```
 
 ## 使い方
@@ -13,7 +13,7 @@ pip install -r requirements.txt
 ### 本日のシグナル生成
 
 ```bash
-python run.py signal
+uv run python run.py signal
 ```
 
 `output/signal_YYYYMMDD.json` にロング・ショート候補が出力されます。
@@ -21,8 +21,8 @@ python run.py signal
 ### バックテスト
 
 ```bash
-python run.py simulate --start 2020-01-01 --end 2025-12-31
-python run.py simulate --start 2020-01-01 --end 2025-12-31 --plot
+uv run python run.py simulate --start 2020-01-01 --end 2025-12-31
+uv run python run.py simulate --start 2020-01-01 --end 2025-12-31 --plot
 ```
 
 `output/simulation_result.csv` と `output/simulation_plot.png` が保存されます。
