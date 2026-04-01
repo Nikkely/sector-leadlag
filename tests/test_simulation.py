@@ -8,10 +8,12 @@ from leadlag.simulation import performance_metrics, run_simulation
 class TestRunSimulation:
     def _make_data(self):
         dates = pd.bdate_range("2024-01-01", periods=10)
+        tickers = ["1617.T", "1618.T", "1619.T", "1620.T", "1621.T"]
         rng = np.random.default_rng(42)
         jp_returns = pd.DataFrame(
             rng.standard_normal((10, 5)) * 0.01,
             index=dates,
+            columns=tickers,
         )
         signals = [pd.Series(rng.standard_normal(5)) for _ in range(10)]
         return signals, jp_returns, dates
