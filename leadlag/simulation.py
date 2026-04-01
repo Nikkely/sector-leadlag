@@ -24,7 +24,8 @@ def run_simulation(
         sorted_idx = signal.argsort()[::-1]
         long_idx = sorted_idx[:top_n]
 
-        day_return = jp_returns.iloc[jp_returns.index.get_loc(date)][long_idx].mean()
+        day_row = jp_returns.iloc[jp_returns.index.get_loc(date)]
+        day_return = day_row.iloc[long_idx].mean()
         daily_returns.append({"date": date, "daily_return": day_return})
 
     sim_df = pd.DataFrame(daily_returns)
